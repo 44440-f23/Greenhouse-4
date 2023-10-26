@@ -1,0 +1,36 @@
+#include <Arduino.h>
+#include "Wire.h"
+#define addr
+
+
+char dart[15];
+char dlen=0;
+
+uint8_t Data[100]={0};
+uint16_t buff[100]={0};
+
+
+void setup() {
+  Serial.begin(2000);
+  Wire.begin();
+}
+
+uint8_t buff[4]={0};
+uint16_t data, data1;
+float temperture;
+float humid;
+
+void loop() {
+  readReg(0x00, buff, 4);
+  data=buff[0]<<8|buff[1];
+  data1=buff[2]<<8|buff[3];
+  temperture=((float)data*165/65535.0)-40.0;
+  if(temperture<70){
+    Serial.println("Temperture is too low.");
+  }
+  humid=((float)data1/65535.0)*100;
+  Serial.print(temperture);
+  Serial.print("C");
+  Serial.println();
+  delay(1000);
+}
