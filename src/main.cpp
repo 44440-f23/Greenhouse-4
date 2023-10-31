@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <painlessMesh.h>
+#include <ArduinoJson.h>
 #include "Wire.h"
 
 //Mesh global and func
@@ -14,19 +15,23 @@ void parseSimpleJson(const char* jsonString);
 void sendMessage();
 
 //Sensor global and func
-#define addr
+#define addr 0x40
+uint8_t readReg(uint8_t reg, const void* pBuf, size_t size);
 
 //Mesh vars
 Task taskSendMessage(TASK_SECOND * MESG_DELAY_SEC, TASK_FOREVER, &sendMessage);
 Scheduler userSched; painlessMesh mesh;
 uint32_t baseID = 0; int fail_count = 0;
 const size_t bufferSize = 1024;
+String message;
+
 
 //Sensor vars
 char dart[15]; char dlen=0;
 uint8_t Data[100]={0}; uint8_t buff[4]={0};
-uint16_t data, data1; uint16_t buff[100]={0};
+uint16_t data, data1;
 float temp; float humid;
+DynamicJsonDocument msg(1024);
 
 void setup() {
   //Mesh setup
@@ -43,32 +48,15 @@ void setup() {
 void loop() {
   //Mesh loop. DO NOT ADD DELAYS, it messes up the mesh
   mesh.update();
-
-  //Sensor loop. This is commented out for now, as we will only need to
-  //read the sensors when sending a message and not all the time
-  /*
-  readReg(0x00, buff, 4);
-  data=buff[0]<<8|buff[1];
-  data1=buff[2]<<8|buff[3];
-  temp=((float)data*165/65535.0)-40.0;
-  if(temp<70){
-    Serial.println("Temperture is too low.");
-  }
-  humid=((float)data1/65535.0)*100;
-  Serial.print(temp);
-  Serial.print("C");
-  Serial.println();
-  */
 }
 
 //Sending message function
 void sendMessage(){
-  //Build message
-  String msg = "Greenhouse 4\n";
 
   //Test if we have the base ID to send to
   if(mesh.isConnected(baseID)){
-    mesh.sendSingle(baseID, msg); Serial.println("Sending... " + msg);
+    serializeJson(msg, message);
+    mesh.sendSingle(baseID, message); Serial.println("Sending... " + message);
   }
   else{
     //If there is no base station, start to add to fails
@@ -106,4 +94,31 @@ return;
 baseID = jsonDoc["basestation"];
 // Output the json data
 Serial.println("baseID: " + baseID);
+}
+
+void grab_data(){
+  readReg(0x00, buff, 4);
+  data=buff[0]<<8|buff[1];
+  data1=buff[2]<<8|buff[3];
+  msg["temp"] = ((float)data*165/65535.0)-40.0;
+  msg["humidity"] = ((float)data1/65535.0)*100;
+  msg["lightS"] = analogRead(A5);
+}
+
+uint8_t readReg(uint8_t reg, const void* pBuf, uint8_t size)
+  {
+  if (pBuf == NULL) {
+    Serial.println("pBuf ERROR!! : null pointer");
+  }
+  uint8_t * _pBuf = (uint8_t *)pBuf;
+  Wire.beginTransmission(addr);
+  Wire.write(&reg, 1);
+  if ( Wire.endTransmission() != 0) {
+    return 0;
+  }
+  Wire.requestFrom((uint8_t)addr, size);
+  for (uint16_t i = 0; i < size; i++) {
+    _pBuf[i] = Wire.read();
+  }
+  return size;
 }

@@ -13,23 +13,14 @@ void setup() {
   Serial.begin(9600);
   Serial.println();
   Wire.begin();
-  }
+
   uint16_t data, data1;
   float temperture;
   float humid;
 
 
 void loop() {
-  readReg(0x00, buff, 4);
-  data=buff[0]<<8|buff[1];
-  data1=buff[2]<<8|buff[3];
-  temperture=((float)data*165/65535.0)-40.0;
-  humid=((float)data1/65535.0)*100;
-    Serial.print("temp(C):");
-  Serial.print(temperture);
-  Serial.print("\t");
-  Serial.print("hum(%RH):");
-  Serial.println(humid);
+  
   delay(1000);  
 
   int light;
