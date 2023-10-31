@@ -7,6 +7,7 @@
 
 uint8_t readReg(uint8_t reg, const void* pBuf, size_t size);
 uint8_t buff[4] = {0};
+DynamicJsonDocument doc(1024);
 
 void setup() {
   Serial.begin(9600);
@@ -35,6 +36,8 @@ void loop() {
   light=analogRead(A5);
   Serial.print(light, DEC);
   delay(100);
+
+  doc["time"]   = 1351824120;
 }
   uint8_t readReg(uint8_t reg, const void* pBuf, size_t size)
   {
