@@ -4,8 +4,8 @@
 #include "Wire.h"
 
 //Mesh global and func
-//#define MESH_SSID "WhateverYouLike"
-#define MESH_SSID "sensortesting"
+#define MESH_SSID "WhateverYouLike"
+//#define MESH_SSID "sensortesting"
 //THIS WIFI NAME IS INCORRECT TO NOT INTERFERE WITH MESH TESTING FOR NOW
 #define MESH_PASSWORD "SomethingSneaky"
 #define MESH_PORT 5555
@@ -16,7 +16,8 @@ void sendMessage();
 
 //Sensor global and func
 #define addr 0x40
-uint8_t readReg(uint8_t reg, const void* pBuf, size_t size);
+uint8_t readReg(uint8_t reg, const void* pBuf, uint8_t size);
+void grab_data();
 
 //Mesh vars
 Task taskSendMessage(TASK_SECOND * MESG_DELAY_SEC, TASK_FOREVER, &sendMessage);
@@ -55,8 +56,10 @@ void sendMessage(){
 
   //Test if we have the base ID to send to
   if(mesh.isConnected(baseID)){
+    grab_data();
     serializeJson(msg, message);
     mesh.sendSingle(baseID, message); Serial.println("Sending... " + message);
+    message = "";
   }
   else{
     //If there is no base station, start to add to fails
@@ -97,6 +100,8 @@ Serial.println("baseID: " + baseID);
 }
 
 void grab_data(){
+  msg["id"] = 4;
+
   readReg(0x00, buff, 4);
   data=buff[0]<<8|buff[1];
   data1=buff[2]<<8|buff[3];
