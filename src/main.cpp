@@ -24,15 +24,15 @@ Task taskSendMessage(TASK_SECOND * MESG_DELAY_SEC, TASK_FOREVER, &sendMessage);
 Scheduler userSched; painlessMesh mesh;
 uint32_t baseID = 0; int fail_count = 0;
 const size_t bufferSize = 1024;
+DynamicJsonDocument msg(1024);
 String message;
-
 
 //Sensor vars
 char dart[15]; char dlen=0;
 uint8_t Data[100]={0}; uint8_t buff[4]={0};
 uint16_t data, data1;
 float temp; float humid;
-DynamicJsonDocument msg(1024);
+
 
 void setup() {
   //Mesh setup
