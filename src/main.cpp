@@ -29,9 +29,7 @@ String message;
 
 //Sensor vars
 char dart[15]; char dlen=0;
-uint8_t Data[100]={0}; uint8_t buff[4]={0};
-uint16_t data, data1;
-float temp; float humid;
+uint8_t Data[100]={0}; uint8_t buff[100]={0};
 
 
 void setup() {
@@ -45,6 +43,8 @@ void setup() {
   //Sensor setup
   Wire.begin();
 }
+
+uint16_t data, data1;
 
 void loop() {
   //Mesh loop. DO NOT ADD DELAYS, it messes up the mesh
@@ -107,7 +107,7 @@ void grab_data(){
   data1=buff[2]<<8|buff[3];
   msg["temp"] = ((float)data*165/65535.0)-40.0;
   msg["humidity"] = ((float)data1/65535.0)*100;
-  msg["lightS"] = analogRead(A5);
+  msg["lightS"] = analogRead(A0);
 }
 
 uint8_t readReg(uint8_t reg, const void* pBuf, uint8_t size)
@@ -121,6 +121,7 @@ uint8_t readReg(uint8_t reg, const void* pBuf, uint8_t size)
   if ( Wire.endTransmission() != 0) {
     return 0;
   }
+  delay(20);
   Wire.requestFrom((uint8_t)addr, size);
   for (uint16_t i = 0; i < size; i++) {
     _pBuf[i] = Wire.read();

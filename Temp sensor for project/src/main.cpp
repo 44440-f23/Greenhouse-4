@@ -20,7 +20,6 @@ void setup() {
 
 
 void loop() {
-  
   delay(1000);  
 
   int light;
@@ -28,8 +27,8 @@ void loop() {
   Serial.print(light, DEC);
   delay(100);
 
-  doc["time"]   = 1351824120;
 }
+
   uint8_t readReg(uint8_t reg, const void* pBuf, size_t size)
   {
   if (pBuf == NULL) {
